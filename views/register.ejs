@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrarse - Apuntes Ya</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('_navbar') %>
+
+    <main class="container login-register-container">
+        <div class="form-container">
+            <h2>Registrate en Apuntes Ya</h2>
+            <form action="/register" method="POST">
+                
+                <div class="form-group">
+                    <label for="username">Nombre de Usuario</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="university">Universidad</label>
+                    <select id="university" name="university" required>
+                        <option value="">Selecciona tu universidad</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="faculty">Facultad</label>
+                    <select id="faculty" name="faculty" disabled required>
+                        <option value="">Selecciona tu facultad</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="career">Carrera</label>
+                    <select id="career" name="career" disabled required>
+                        <option value="">Selecciona tu carrera</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn">Registrarse</button>
+            </form>
+            <p>¿Ya tenés cuenta? <a href="/login">Iniciá sesión.</a></p>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let dataCompleta = {};
+            const uniSelect = document.getElementById('university');
+            const facuSelect = document.getElementById('faculty');
+            const carreraSelect = document.getElementById('career');
+
+            // Cargar datos de universidades al iniciar
+            fetch('/api/universidades')
+                .then(response => response.json())
+                .then(data => {
+                    dataCompleta = data;
+                    const universidades = Object.keys(data);
+                    universidades.forEach(uni => {
+                        const option = document.createElement('option');
+                        option.value = uni;
+                        option.textContent = uni;
+                        uniSelect.appendChild(option);
+                    });
+                });
+
+            // Lógica de cambio para Universidad
+            uniSelect.addEventListener('change', () => {
+                const uniSeleccionada = uniSelect.value;
+                facuSelect.innerHTML = '<option value="">Selecciona tu facultad</option>';
+                carreraSelect.innerHTML = '<option value="">Selecciona tu carrera</option>';
+                facuSelect.disabled = true;
+                carreraSelect.disabled = true;
+
+                if (uniSeleccionada && dataCompleta[uniSeleccionada]) {
+                    facuSelect.disabled = false;
+                    const facultades = Object.keys(dataCompleta[uniSeleccionada]);
+                    facultades.forEach(facu => {
+                        const option = document.createElement('option');
+                        option.value = facu;
+                        option.textContent = facu;
+                        facuSelect.appendChild(option);
+                    });
+                }
+            });
+
+            // Lógica de cambio para Facultad
+            facuSelect.addEventListener('change', () => {
+                const uniSeleccionada = uniSelect.value;
+                const facuSeleccionada = facuSelect.value;
+                carreraSelect.innerHTML = '<option value="">Selecciona tu carrera</option>';
+                carreraSelect.disabled = true;
+                
+                if (facuSeleccionada && dataCompleta[uniSeleccionada]?.[facuSeleccionada]) {
+                    carreraSelect.disabled = false;
+                    const carreras = dataCompleta[uniSeleccionada][facuSeleccionada];
+                    carreras.forEach(carrera => {
+                        const option = document.createElement('option');
+                        option.value = carrera;
+                        option.textContent = carrera;
+                        carreraSelect.appendChild(option);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= apunte.title %> - Apuntes Ya</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('_navbar') %>
+
+    <main class="container apunte-detalle-container">
+        <% if (apunte) { %>
+            <h1><%= apunte.title %></h1>
+            <div class="apunte-info">
+                <p><span class="meta-label">Materia:</span> <%= apunte.subject %></p>
+                <p><span class="meta-label">Universidad:</span> <%= apunte.university %></p>
+                <p><span class="meta-label">Facultad:</span> <%= apunte.faculty %></p>
+                <p><span class="meta-label">Carrera:</span> <%= apunte.career %></p>
+                <p><span class="meta-label">Subido por:</span> <%= apunte.username %></p>
+                <p><span class="meta-label">Fecha de Subida:</span> <%= new Date(apunte.upload_date).toLocaleDateString() %></p>
+            </div>
+
+            <% if (apunte.description) { %>
+                <div class="apunte-description">
+                    <h3>Descripción:</h3>
+                    <p><%= apunte.description %></p>
+                </div>
+            <% } %>
+
+            <div class="file-preview-container">
+                <% if (apunte.file_path && (apunte.file_path.endsWith('.pdf') || apunte.file_path.endsWith('.PDF'))) { %>
+                    <iframe src="<%= apunte.file_path %>" width="100%" height="600px" style="border: none;"></iframe>
+                <% } else if (apunte.file_path && (apunte.file_path.endsWith('.jpg') || apunte.file_path.endsWith('.jpeg') || apunte.file_path.endsWith('.png') || apunte.file_path.endsWith('.gif'))) { %>
+                    <img src="<%= apunte.file_path %>" alt="Previsualización del apunte" class="file-preview">
+                <% } else { %>
+                    <p>No hay previsualización disponible para este tipo de archivo.</p>
+                <% } %>
+            </div>
+
+            <div class="download-button-wrapper">
+                <a href="<%= apunte.file_path %>" class="btn" download>Descargar Apunte</a>
+            </div>
+
+        <% } else { %>
+            <p>El apunte que buscas no se encontró.</p>
+        <% } %>
+    </main>
+</body>
+</html>

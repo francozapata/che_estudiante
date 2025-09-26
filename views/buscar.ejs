@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscar Apuntes - Apuntes Ya</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('_navbar') %>
+
+    <main class="container">
+        <div class="search-container">
+            <h1>Encuentra tus Apuntes</h1>
+            <p>Busca entre miles de apuntes subidos por estudiantes como tú.</p>
+            <form action="/buscar" method="GET" class="search-bar">
+                <input type="search" id="search-query" name="q" placeholder="Buscar por título, materia o descripción..." value="<%= query %>">
+                <button type="submit" class="btn">Buscar</button>
+            </form>
+
+            <div class="filters-container">
+                <div class="form-group">
+                    <label for="filter-university">Universidad</label>
+                    <select id="filter-university" name="university">
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-faculty">Facultad</label>
+                    <select id="filter-faculty" name="faculty" disabled>
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-career">Carrera</label>
+                    <select id="filter-career" name="career" disabled>
+                        <option value="">Todas</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-subject">Materia</label>
+                    <input type="text" id="filter-subject" name="subject" placeholder="Ej: Álgebra" value="<%= subject %>">
+                </div>
+            </div>
+
+            <hr class="search-divider">
+
+            <div class="search-results">
+                <h2>Resultados de la Búsqueda (<%= apuntes.length %>)</h2>
+                <% if (apuntes && apuntes.length > 0) { %>
+                    <% apuntes.forEach(apunte => { %>
+                        <div class="apunte-card">
+                            <div class="apunte-card-body">
+                                <h3><%= apunte.title %></h3>
+                                <p class="apunte-meta"><%= apunte.subject %> - <%= apunte.university %></p>
+                                <p class="apunte-author">Subido por: <%= apunte.username %></p>
+                            </div>
+                            <div class="apunte-card-footer">
+                                <span class="apunte-price">Gratis</span>
+                                <a href="/apuntes/<%= apunte.id %>" class="btn">Ver Apunte</a>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <p>No se encontraron apuntes con los criterios de búsqueda.</p>
+                <% } %>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let dataCompleta = {};
+            const filterUniSelect = document.getElementById('filter-university');
+            const filterFacuSelect = document.getElementById('filter-faculty');
+            const filterCarreraSelect = document.getElementById('filter-career');
+
+            const currentUniversity = '<%= university %>';
+            const currentFaculty = '<%= faculty %>';
+            const currentCareer = '<%= career %>';
+
+            // Cargar datos de universidades al iniciar
+            fetch('/api/universidades')
+                .then(response => response.json())
+                .then(data => {
+                    dataCompleta = data;
+                    const universidades = Object.keys(data);
+                    universidades.forEach(uni => {
+                        const option = document.createElement('option');
+                        option.value = uni;
+                        option.textContent = uni;
+                        filterUniSelect.appendChild(option);
+                    });
+
+                    // Seleccionar la universidad actual si existe
+                    if (currentUniversity) {
+                        filterUniSelect.value = currentUniversity;
+                        updateFaculties(currentUniversity);
+                    }
+                });
+
+            // Lógica de cambio para Universidad del filtro
+            filterUniSelect.addEventListener('change', () => {
+                const uniSeleccionada = filterUniSelect.value;
+                updateFaculties(uniSeleccionada);
+            });
+
+            // Lógica de cambio para Facultad del filtro
+            filterFacuSelect.addEventListener('change', () => {
+                const uniSeleccionada = filterUniSelect.value;
+                const facuSeleccionada = filterFacuSelect.value;
+                updateCareers(uniSeleccionada, facuSeleccionada);
+            });
+
+            function updateFaculties(uniSeleccionada) {
+                filterFacuSelect.innerHTML = '<option value="">Todas</option>';
+                filterCarreraSelect.innerHTML = '<option value="">Todas</option>';
+                filterFacuSelect.disabled = true;
+                filterCarreraSelect.disabled = true;
+
+                if (uniSeleccionada && dataCompleta[uniSeleccionada]) {
+                    filterFacuSelect.disabled = false;
+                    const facultades = Object.keys(dataCompleta[uniSeleccionada]);
+                    facultades.forEach(facu => {
+                        const option = document.createElement('option');
+                        option.value = facu;
+                        option.textContent = facu;
+                        filterFacuSelect.appendChild(option);
+                    });
+
+                    // Seleccionar la facultad actual si existe
+                    if (currentFaculty && uniSeleccionada === currentUniversity) {
+                        filterFacuSelect.value = currentFaculty;
+                        updateCareers(uniSeleccionada, currentFaculty);
+                    }
+                }
+            }
+
+            function updateCareers(uniSeleccionada, facuSeleccionada) {
+                filterCarreraSelect.innerHTML = '<option value="">Todas</option>';
+                filterCarreraSelect.disabled = true;
+                
+                if (facuSeleccionada && dataCompleta[uniSeleccionada]?.[facuSeleccionada]) {
+                    filterCarreraSelect.disabled = false;
+                    const carreras = dataCompleta[uniSeleccionada][facuSeleccionada];
+                    carreras.forEach(carrera => {
+                        const option = document.createElement('option');
+                        option.value = carrera;
+                        option.textContent = carrera;
+                        filterCarreraSelect.appendChild(option);
+                    });
+
+                    // Seleccionar la carrera actual si existe
+                    if (currentCareer && facuSeleccionada === currentFaculty && uniSeleccionada === currentUniversity) {
+                        filterCarreraSelect.value = currentCareer;
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

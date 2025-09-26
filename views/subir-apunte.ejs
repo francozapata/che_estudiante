@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subir Apunte - Apuntes Ya</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('_navbar') %>
+
+    <div class="form-container">
+        <h2>Subir un nuevo apunte</h2>
+        <form action="/subir-apunte" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="title">Título del Apunte</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Descripción (opcional)</label>
+                <textarea id="description" name="description" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="university">Universidad</label>
+                <select id="university" name="university" required>
+                    <option value="">Selecciona tu universidad</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="faculty">Facultad</label>
+                <select id="faculty" name="faculty" disabled required>
+                    <option value="">Selecciona tu facultad</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="career">Carrera</label>
+                <select id="career" name="career" disabled required>
+                    <option value="">Selecciona tu carrera</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="subject">Materia</label>
+                <input type="text" id="subject" name="subject" required>
+            </div>
+            <div class="form-group">
+                <label for="file">Archivo del Apunte (PDF, DOCX, etc.)</label>
+                <input type="file" id="file" name="file" accept=".pdf,.doc,.docx,.txt" required>
+            </div>
+            <button type="submit" class="btn">Subir Apunte</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let dataCompleta = {};
+            const uniSelect = document.getElementById('university');
+            const facuSelect = document.getElementById('faculty');
+            const carreraSelect = document.getElementById('career');
+
+            // Cargar datos de universidades al iniciar
+            fetch('/api/universidades')
+                .then(response => response.json())
+                .then(data => {
+                    dataCompleta = data;
+                    const universidades = Object.keys(data);
+                    universidades.forEach(uni => {
+                        const option = document.createElement('option');
+                        option.value = uni;
+                        option.textContent = uni;
+                        uniSelect.appendChild(option);
+                    });
+                });
+
+            // Lógica de cambio para Universidad
+            uniSelect.addEventListener('change', () => {
+                const uniSeleccionada = uniSelect.value;
+                facuSelect.innerHTML = '<option value="">Selecciona tu facultad</option>';
+                carreraSelect.innerHTML = '<option value="">Selecciona tu carrera</option>';
+                facuSelect.disabled = true;
+                carreraSelect.disabled = true;
+
+                if (uniSeleccionada && dataCompleta[uniSeleccionada]) {
+                    facuSelect.disabled = false;
+                    const facultades = Object.keys(dataCompleta[uniSeleccionada]);
+                    facultades.forEach(facu => {
+                        const option = document.createElement('option');
+                        option.value = facu;
+                        option.textContent = facu;
+                        facuSelect.appendChild(option);
+                    });
+                }
+            });
+
+            // Lógica de cambio para Facultad
+            facuSelect.addEventListener('change', () => {
+                const uniSeleccionada = uniSelect.value;
+                const facuSeleccionada = facuSelect.value;
+                carreraSelect.innerHTML = '<option value="">Selecciona tu carrera</option>';
+                carreraSelect.disabled = true;
+                
+                if (facuSeleccionada && dataCompleta[uniSeleccionada]?.[facuSeleccionada]) {
+                    carreraSelect.disabled = false;
+                    const carreras = dataCompleta[uniSeleccionada][facuSeleccionada];
+                    carreras.forEach(carrera => {
+                        const option = document.createElement('option');
+                        option.value = carrera;
+                        option.textContent = carrera;
+                        carreraSelect.appendChild(option);
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

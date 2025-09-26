@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Apuntes Ya</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('_navbar') %>
+
+    <main class="container login-register-container">
+        <div class="form-container">
+            <h2>Iniciar Sesión</h2>
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label for="email">Email o Nombre de Usuario</label>
+                    <input type="text" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn">Ingresar</button>
+            </form>
+            <p>¿No tenés cuenta? <a href="/register">Creá una ahora.</a></p>
+        </div>
+    </main>
+</body>
+</html>

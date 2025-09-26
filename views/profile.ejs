@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Apuntes Ya</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <%- include('_navbar') %>
+
+    <div class="container profile-page">
+        <header class="profile-header">
+            <div class="profile-avatar-wrapper">
+                <img src="/img/default-avatar.png" alt="Avatar de <%= user.username %>" class="profile-avatar" id="profileAvatar">
+                <label for="avatarUpload" class="upload-btn">
+                    Cambiar
+                    <input type="file" id="avatarUpload" class="hidden-input" accept="image/*">
+                </label>
+            </div>
+            <div class="profile-info">
+                <h3><%= user.username %></h3>
+                <p class="profile-description"><%= user.career %> en <%= user.faculty %>, <%= user.university %></p>
+                </div>
+        </header>
+
+        <section class="form-container">
+            <h2>Editar Perfil</h2>
+            <form action="/profile/edit" method="POST">
+                <div class="form-group">
+                    <label for="edit-username">Nombre de Usuario</label>
+                    <input type="text" id="edit-username" name="username" value="<%= user.username %>" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-email">Email</label>
+                    <input type="email" id="edit-email" name="email" value="<%= user.email %>" required>
+                </div>
+                <button type="submit" class="btn">Guardar Cambios</button>
+            </form>
+        </section>
+
+        <section class="mis-apuntes-container">
+            <h2>Mis Apuntes Subidos</h2>
+            <hr class="divider">
+            <div class="apuntes-list">
+                <% if (userApuntes && userApuntes.length > 0) { %> <% userApuntes.forEach(apunte => { %>
+                        <div class="apunte-card-profile">
+                            <div>
+                                <h3><%= apunte.title %></h3>
+                                <p class="apunte-meta"><%= apunte.university %> - <%= apunte.faculty %> - <%= apunte.career %></p>
+                                <p class="apunte-meta">Subido el: <%= new Date(apunte.upload_date).toLocaleDateString() %></p>
+                            </div>
+                            <div class="apunte-actions">
+                                <a href="/apuntes/<%= apunte.id %>" class="btn btn-secondary">Ver</a>
+                                </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <p>Todavía no has subido ningún apunte. ¡Anímate a compartir!</p>
+                <% } %>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        document.getElementById('avatarUpload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profileAvatar').src = e.target.result;
+                    // Aquí podrías enviar la imagen al servidor
+                    // Esto requeriría una nueva ruta en tu server.js para manejar la subida de avatares.
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
